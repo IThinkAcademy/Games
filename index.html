@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="/my-favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/my-favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/my-favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/my-favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="IThink" />
+    <link rel="manifest" href="/my-favicon/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Game Gallery</title>
+    <style>
+      /* Basic Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      /* Disable text selection */
+      * {
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      img {
+        pointer-events: none;
+        -webkit-user-drag: none;
+        user-select: none;
+      }
+
+      h2 {
+        color: #4a90e2;
+        font-size: 2.2em;
+        margin-bottom: 10px;
+      }
+
+      p {
+        color: #b0b0b0;
+        font-size: 1.1em;
+      }
+
+      /* Main Container */
+      .container {
+        max-width: 1240px;
+        width: 100%;
+        padding: 20px;
+        margin: auto;
+        text-align: center;
+        flex: 1;
+      }
+
+      /* Body Styling */
+      body {
+        background-color: #121212;
+        color: #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      #backgroundCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      html,
+      body {
+        overflow-x: hidden;
+      }
+
+      /* Header */
+      header {
+        background: linear-gradient(to bottom, #1e88e5, #0b365b);
+        padding: 13.4px;
+        text-align: center;
+        color: #e0f7fa;
+      }
+
+      header h1 {
+        font-size: 2.345em;
+        margin: 0;
+      }
+
+      header p {
+        padding: 3px;
+        font-size: 0.804em;
+        margin-top: 6.7px;
+      }
+
+      .playfair-title {
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        font-optical-sizing: auto;
+      }
+
+      /* Navigation */
+      nav {
+        display: flex;
+        justify-content: center;
+        background-color: #004ca3;
+        flex-wrap: wrap;
+        box-shadow: 0px 2.68px 13.4px rgba(0, 0, 0, .3);
+      }
+
+      nav a {
+        color: #e0f7fa;
+        text-decoration: none;
+        padding: 8px 13.4px;
+        font-size: 0.871em;
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      @media (max-width: 768px) {
+        nav a {
+          font-size: 1.1em !important;
+          padding: 10px;
+          font-size: 1em;
+        }
+      }
+
+      nav a::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 3.35px;
+        left: 50%;
+        background-color: #e0f7fa;
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+      }
+
+      nav a:hover {
+        color: #ffffff;
+      }
+
+      nav a:hover::after {
+        width: 100%;
+      }
+
+      /* Gallery Styling */
+      .section-gallery {
+        display: flex;
+        justify-content: center;
+        padding-top: 90px;
+        padding-bottom: 180px;
+        transform-style: preserve-3d;
+        rotate: x -8deg;
+      }
+
+      .gallery-list {
+        width: 200px;
+        height: 220px;
+        position: relative;
+        transform-style: preserve-3d;
+        transform: perspective(2000px) rotateY(0deg);
+        transition: 0.5s;
+        list-style-type: none;
+      }
+
+      .gallery-item {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        transform: rotateY(calc(var(--i) * 45deg)) translateZ(280px);
+        -webkit-box-reflect: below 0 linear-gradient(to bottom, transparent 50%, rgb(33, 33, 33, 0.3));
+      }
+
+      .card {
+        width: 100%;
+        height: 100%;
+        border-radius: 6px;
+        box-shadow: 0 0 10px rgb(33, 33, 33, 0.5);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      .card:hover {
+        transform: scale(1.03);
+        box-shadow: 0px 4px 20px rgba(21, 73, 132, 0.5);
+      }
+
+      .card-img {
+        width: 100%;
+        height: 70%;
+        object-fit: cover;
+        object-position: center;
+        vertical-align: top;
+        user-select: none;
+      }
+
+      .game-info {
+        padding: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #e0f7fa;
+        font-size: 0.9em;
+      }
+
+      .game-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .game-designer,
+      .game-description {
+        margin-bottom: 5px;
+      }
+
+      /* Controller Styling */
+      .section-controller {
+        padding: 10px 5%;
+        text-align: center;
+      }
+
+      .btn {
+        width: 40px;
+        aspect-ratio: 1 / 1;
+        padding: 0;
+        border: 1px solid #f9fbe7;
+        border-radius: 50%;
+        background: transparent;
+        color: #f9fbe7;
+        font-size: 20px;
+        transition: 0.3s;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: #f9fbe7;
+        color: #121212;
+      }
+
+      .btn:active {
+        box-shadow: 0 0 10px #f9fbe7;
+      }
+
+      .btn-prev {
+        rotate: 180deg;
+        margin-right: 40px;
+      }
+
+      /* Footer Styling */
+      footer {
+        background-color: #004ca3;
+        text-align: center;
+        padding: 15px;
+        color: #bbdefb;
+        width: 100%;
+        font-size: 0.9em;
+      }
+
+      .header-outline {
+        margin-bottom: 0;
+      }
+
+      /* Initially blur all gallery items */
+      .gallery-item {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        transform: rotateY(calc(var(--i) * 45deg)) translateZ(280px);
+        -webkit-box-reflect: below 0 linear-gradient(to bottom, transparent 50%, rgb(33, 33, 33, 0.3));
+        filter: blur(5px);
+        /* Apply a blur effect */
+        transition: filter 0.3s ease;
+        /* Smooth transition for blurring effect */
+      }
+
+      /* Remove blur from the focused item */
+      .gallery-item.focused {
+        filter: blur(0px);
+        /* Focused item is clear */
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="backgroundCanvas"></canvas>
+    <header>
+      <h1 class="playfair-title">IThink Academy</h1>
+      <p class="header-outline">Initializing Thinkers in Engaging and Creative Ways!</p>
+    </header>
+    <nav>
+      <a href="index.html#courses-">Courses</a>
+      <a href="index.html#games-">Games</a>
+      <a href="index.html#projects-">Projects</a>
+      <a href="index.html#pricing-">Pricing</a>
+      <a href="index.html#contact-">Contact Us</a>
+    </nav>
+    <div class="container">
+      <div class="intro">
+        <h2>Game Gallery</h2>
+        <p style="font-size: 1.4em; padding-bottom: 2px;">View this week's list of featured games!</p>
+        <p style="max-width: 600px; margin: 0 auto; word-wrap: break-word;">Dive into this showcase of incredible games, all developed by creative minds. Explore their innovative designs and experience the future of gaming!</p>
+      </div>
+      <section class="section-gallery">
+        <ul class="gallery-list">
+          <li class="gallery-item" style="--i: 1;">
+            <div class="card" data-website="https://turbowarp.org/842213543/fullscreen">
+              <img class="card-img" src="grow.png">
+              <div class="game-info">
+                <div class="game-title">Grow!</div>
+                <div class="game-designer">Designer: Aaron Murry</div>
+                <div class="game-description">Guide water through rotating tiles to help a plant grow!</div>
+              </div>
+            </div>
+          </li>
+          <li class="gallery-item" style="--i: 2;">
+            <div class="card" data-website="https://turbowarp.org/432493497/fullscreen">
+              <img class="card-img" src="duel.png">
+              <div class="game-info">
+                <div class="game-title">Duel!</div>
+                <div class="game-designer">Designer: -PickleAnimator-</div>
+                <div class="game-description">Navigate through challenging levels, defeat enemies and collect coins.</div>
+              </div>
+            </div>
+          </li>
+          <li class="gallery-item" style="--i: 3;">
+            <div class="card" data-website="https://turbowarp.org/421467407/fullscreen">
+              <img class="card-img" src="CitySim.PNG">
+              <div class="game-info">
+                <div class="game-title">City Simulator</div>
+                <div class="game-designer">Designer: ComplicatedCodes</div>
+                <div class="game-description">Build, and manage a bustling metropolis.</div>
+              </div>
+            </div>
+          </li>
+          <li class="gallery-item" style="--i: 4;">
+            <div class="card" data-website="https://turbowarp.org/472167629/fullscreen">
+              <img class="card-img" src="spacevale.png">
+              <div class="game-info">
+                <div class="game-title">Spacevale</div>
+                <div class="game-designer">Designer: Coder_d6</div>
+                <div class="game-description">Use the mouse to move your ship around the screen.</div>
+              </div>
+            </div>
+          </li>
+          <li class="gallery-item" style="--i: 5;">
+            <div class="card" data-website="https://turbowarp.org/60917032/fullscreen">
+              <img class="card-img" src="Appel.PNG">
+              <div class="game-info">
+                <div class="game-title">Appel</div>
+                <div class="game-designer">Designer: griffpatch</div>
+                <div class="game-description"> Guide Appel through dangerous levels to collect golden apples!</div>
+              </div>
+            </div>
+          </li>
+          <li class="gallery-item" style="--i: 6;">
+            <div class="card" data-website="https://turbowarp.org/439445950/fullscreen">
+              <img class="card-img" src="farm3.png">
+              <div class="game-info">
+                <div class="game-title">Farming Interactive 3</div>
+                <div class="game-designer">Designer: ComplicatedCodes</div>
+                <div class="game-description">Grow crops, raise animals, and manage your farm.</div>
+              </div>
+            </div>
+          </li>
+          <li class="gallery-item" style="--i: 7;">
+            <div class="card" data-website="https://turbowarp.org/642621499/fullscreen">
+              <img class="card-img" src="train3d.png">
+              <div class="game-info">
+                <div class="game-title">Train Tracks 3D!</div>
+                <div class="game-designer">Designer: David King</div>
+                <div class="game-description">Use the arrow keys to explore a unique, dynamically generated 3D path of train tracks!</div>
+              </div>
+            </div>
+          </li>
+          <li class="gallery-item" style="--i: 8;">
+            <div class="card" data-website="https://turbowarp.org/659671709/fullscreen">
+              <img class="card-img" src="gemquest.png">
+              <div class="game-info">
+                <div class="game-title">Gem Quest</div>
+                <div class="game-designer">Designer: Noah Perez</div>
+                <div class="game-description">Collect gems, traverse challenging platforms, and battle bosses in an epic quest for treasure!</div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </section>
+      <section class="section-controller">
+        <button class="btn btn-prev">⇢</button>
+        <button class="btn btn-next">⇢</button>
+      </section>
+    </div>
+    <footer>
+      <w>Contact Us: <a href="mailto:initiatingthinkers@gmail.com" style="color: #e0f7fa; text-decoration: none;">InitiatingThinkers@gmail.com</a>
+      </w>
+      <p>Follow us on social media for updates and new content!</p>
+    </footer>
+    <script>
+      // Get all gallery items
+      const galleryItems = document.querySelectorAll('.gallery-item');
+      let focusedIndex = 7; // Track the currently focused gallery item
+      let rotateDeg = 0; // Initialize the rotation degree
+      // Function to handle focus change
+      function setFocus(index) {
+        galleryItems.forEach((item, i) => {
+          if (i === index) {
+            item.classList.add('focused'); // Apply focused class (clear the blur)
+          } else {
+            item.classList.remove('focused'); // Remove focused class (apply blur)
+          }
+        });
+      }
+      // Function to handle the card click
+      function handleCardClick(index) {
+        if (focusedIndex === index) {
+          // If clicked on the focused card, open the card's website in a new tab
+          const card = galleryItems[index].querySelector('.card');
+          const websiteUrl = card.getAttribute('data-website'); // Assume each card has a 'data-website' attribute for the URL
+          window.open(websiteUrl, '_blank');
+        } else {
+          // If clicked on a non-focused card, set it as the focused card
+          const previousIndex = focusedIndex;
+          focusedIndex = index;
+          // Calculate the target rotation for the new focused card
+          let targetRotation = focusedIndex * -45; // Each item rotates by 45 degrees
+          // Calculate the shortest rotation to reach the target rotation
+          let currentRotation = previousIndex * -45;
+          let rotationDifference = (targetRotation - currentRotation) % 360;
+          // Adjust rotation difference to take the shortest path
+          if (rotationDifference > 180) {
+            rotationDifference -= 360;
+          } else if (rotationDifference < -180) {
+            rotationDifference += 360;
+          }
+          // Calculate the final rotation
+          rotateDeg += rotationDifference;
+          setFocus(focusedIndex);
+          // Apply rotation to the gallery list
+          galleryList.style.transform = `perspective(1000px) rotateY(${rotateDeg+1}deg)`;
+        }
+      }
+      // Update the focus when the page loads or when focus changes
+      setFocus(focusedIndex);
+      // Add click event listeners to each gallery item
+      galleryItems.forEach((item, index) => {
+        item.addEventListener('click', () => handleCardClick(index));
+      });
+      // Add event listeners for arrow keys to move the focus
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight') {
+          focusedIndex = (focusedIndex + 1) % galleryItems.length; // Move focus to next item
+          rotateDeg -= 45; // Adjust by subtracting 45 degrees to fix the -1 offset
+        } else if (event.key === 'ArrowLeft') {
+          focusedIndex = (focusedIndex - 1 + galleryItems.length) % galleryItems.length; // Move focus to previous item
+          rotateDeg += 45; // Adjust by subtracting 45 degrees to fix the -1 offset
+        }
+        setFocus(focusedIndex); // Update focus
+        //rotateDeg = (focusedIndex * -45) % 360; // Calculate the new rotation
+        galleryList.style.transform = `perspective(1000px) rotateY(${rotateDeg+1}deg)`; // Apply rotation
+      });
+      // Background animation for stars
+      const canvas = document.getElementById('backgroundCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const stars = [];
+      const numstars = 100;
+      // Generate random stars
+      for (let i = 0; i < numstars; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          length: Math.random() * 0.5 + 0,
+          angle: Math.random() * Math.PI * 2,
+          speed: Math.random() * 0.7 + 0.1
+        });
+      }
+      // Draw loop for the star animation
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+          const endX = star.x + Math.cos(star.angle) * star.length;
+          const endY = star.y + Math.sin(star.angle) * star.length;
+          ctx.beginPath();
+          ctx.moveTo(star.x, star.y);
+          ctx.lineTo(endX, endY);
+          ctx.strokeStyle = '#42a5f5';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          star.x += Math.cos(star.angle) * star.speed;
+          star.y += Math.sin(star.angle) * star.speed;
+          if (star.x > canvas.width || star.x < 0 || star.y > canvas.height || star.y < 0) {
+            star.x = Math.random() * canvas.width;
+            star.y = Math.random() * canvas.height;
+          }
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+      // Gallery rotation logic
+      const btnPrev = document.querySelector('.btn-prev');
+      const btnNext = document.querySelector('.btn-next');
+      const galleryList = document.querySelector('.gallery-list');
+      // Button click events for rotating the gallery
+      btnPrev.addEventListener('click', () => rotateGallery('prev'));
+      btnNext.addEventListener('click', () => rotateGallery('next'));
+
+      function rotateGallery(direction) {
+        if (direction === 'prev') {
+          focusedIndex = (focusedIndex - 1 + galleryItems.length) % galleryItems.length; // Move focus to previous item
+          rotateDeg += 45; // Adjust by subtracting 45 degrees to fix the -1 offset
+        } else {
+          focusedIndex = (focusedIndex + 1) % galleryItems.length; // Move focus to next item
+          rotateDeg -= 45; // Adjust by subtracting 45 degrees to fix the -1 offset
+        }
+        setFocus(focusedIndex); // Update focus after rotation
+        //rotateDeg = (focusedIndex * -45) % 360; // Calculate the new rotation
+        galleryList.style.transform = `perspective(1000px) rotateY(${rotateDeg+1}deg)`; // Apply rotation
+      }
+    </script>
+  </body>
+</html>
